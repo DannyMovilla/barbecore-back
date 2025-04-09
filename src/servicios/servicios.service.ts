@@ -47,17 +47,17 @@ export class ServiciosService {
   }
 
   async update(id: number, updateServicioDto: UpdateServicioDto) {
-    await this.findOne(id); // Para validar existencia
+    await this.findOne(Number(id)); // Para validar existencia
     return this.prisma.servicios.update({
-      where: { id },
+      where: { id: Number(id) },
       data: updateServicioDto,
     });
   }
 
   async remove(id: number) {
-    await this.findOne(id); // Para validar existencia
+    await this.findOne(Number(id)); // Para validar existencia
     return this.prisma.servicios.delete({
-      where: { id },
+      where: { id: Number(id) },
     });
   }
 }
