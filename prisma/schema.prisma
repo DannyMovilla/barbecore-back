@@ -356,6 +356,7 @@ model peluquerias {
   direccion  String?
   telefono   String?
   servicios  servicios[] // relación con servicios
+  reservas reservas[]
   perfil_usuarios perfil_usuarios[] // inversa
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
@@ -371,28 +372,35 @@ model perfil_usuarios {
   rol                                           String
   estado                                        Boolean?         @default(true)
   created_at                                    DateTime?        @default(now()) @db.Timestamptz(6)
-  peluqueria_id                                 Int?
+  peluqueria_id                                 Int
   pagos_barberos                                pagos_barberos[]
   users                                         users            @relation(fields: [id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  peluquerias                                   peluquerias?     @relation(fields: [peluqueria_id], references: [id], onUpdate: NoAction)
-  reservas_reservas_barbero_idToperfil_usuarios reservas[]       @relation("reservas_barbero_idToperfil_usuarios")
-  reservas_reservas_cliente_idToperfil_usuarios reservas[]       @relation("reservas_cliente_idToperfil_usuarios")
+  peluqueria            peluquerias @relation(fields: [peluqueria_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  reservas_como_cliente    reservas[] @relation("reservasComoCliente")
+  reservas_como_barbero    reservas[] @relation("reservasComoBarbero")
 
   @@schema("public")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model reservas {
-  id                                                   Int               @id @default(autoincrement())
-  cliente_id                                           String?           @db.Uuid
-  barbero_id                                           String?           @db.Uuid
-  fecha_hora                                           DateTime          @db.Timestamptz(6)
-  observacion                                          String?
-  estado                                               String?           @default("pendiente")
-  created_at                                           DateTime?         @default(now()) @db.Timestamptz(6)
-  detalle_reserva                                      detalle_reserva[]
-  perfil_usuarios_reservas_barbero_idToperfil_usuarios perfil_usuarios?  @relation("reservas_barbero_idToperfil_usuarios", fields: [barbero_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  perfil_usuarios_reservas_cliente_idToperfil_usuarios perfil_usuarios?  @relation("reservas_cliente_idToperfil_usuarios", fields: [cliente_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id               Int              @id @default(autoincrement())
+  cliente_id       String           @db.Uuid
+  barbero_id       String           @db.Uuid
+  peluqueria_id    Int
+
+  fecha_hora       DateTime         @db.Timestamptz(6)
+  observacion      String?
+  estado           String           @default("pendiente")
+  created_at       DateTime?        @default(now()) @db.Timestamptz(6)
+  precio_total     Int              @default(0)
+  duracion_total   Int              @default(0)
+
+  detalle_reserva  detalle_reserva[]
+
+  cliente          perfil_usuarios  @relation("reservasComoCliente", fields: [cliente_id], references: [id], onDelete: Cascade)
+  barbero          perfil_usuarios  @relation("reservasComoBarbero", fields: [barbero_id], references: [id], onDelete: Cascade)
+  peluqueria peluquerias @relation(fields: [peluqueria_id], references: [id], onDelete: Cascade)
 
   @@schema("public")
 }
